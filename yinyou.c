@@ -4,7 +4,14 @@
 #include <Windows.h>
 
 #define T 50
-
+int Perfect = 0, Great = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
+struct notes
+{
+	int row;    //åˆ—æ•°
+	int t;      //å¼€å§‹æ—¶é—´
+	int st;     //æ˜¯å¦å¼€å§‹ï¼Œ0æ˜¯æœªå¼€å§‹ 
+	int line;   //è½åˆ°å¤šå°‘è¡Œ 
+}note1 = {0, 5, 0, 32};
 void Pos(int x, int y)
 {
         COORD pos;
@@ -21,7 +28,7 @@ void HideCursor()
         SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
 
-//»æÖÆ½çÃæ 
+//ç»˜åˆ¶ç•Œé¢ 
 void DrawBG()
 {
 	
@@ -40,7 +47,7 @@ void DrawBG()
     printf("\\----------------------------------------------------------/\n");
 }
 
-//´òÓ¡Òô·û 
+//æ‰“å°éŸ³ç¬¦ 
 void PrintNote(int i, int j, int note)
 {
 	switch(i)
@@ -56,7 +63,7 @@ void PrintNote(int i, int j, int note)
 	else if(note == 0) printf("     ");
 }
 
-//Òô·û½µÂä 
+//éŸ³ç¬¦é™è½ 
 void NoteDrop()
 {
 	int i;
@@ -70,12 +77,12 @@ void NoteDrop()
 	}
 } 
 
-//»ñÈ¡°´¼ü 
+//èŽ·å–æŒ‰é”® 
 int GetKey()
 {
 	int i;
 	int start = clock();
-	if(kbhit())                              //¼üÅÌÓÐÊäÈë¿ªÊ¼Ö´ÐÐ 
+	if(kbhit())                              //é”®ç›˜æœ‰è¾“å…¥å¼€å§‹æ‰§è¡Œ 
 	{
 		i = (int)(getch());
 	}
@@ -91,10 +98,39 @@ int GetKey()
 	}
 }
 
-//ÅÐ¶ÏÒô·û
+//åˆ¤æ–­éŸ³ç¬¦
 void JudgeNote(int i)
 {
-
+	//for(;;)
+	//{
+	//	if(note1.line > 30)	//continue;
+		if(note1.st == 0)
+		{
+			if(note1.t == 5)	i++;//continue;
+			else	note1.st = 1;
+		}
+		if(note1.st == 1)
+		{
+			if(note1.line == 32)
+			{
+				Perfect++;
+				COMBO++;
+				Score += 20;
+			}
+			if(note1.line == 31 || note1.line == 33)
+			{
+				Great++;
+				COMBO++;
+				Score += 10;
+			}
+			if(note1.line == 30 || note1.line == 34)
+			{
+				Miss++;
+				COMBO = 0;
+				Life -= 10;
+			}
+		}
+	//}	
 }
 
 int main()
