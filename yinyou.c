@@ -3,17 +3,14 @@
 #include <stdlib.h>
 #include <Windows.h>
 
-#define T 25
+#define T 35
+#define NOTE struct note
 int Perfect = 0, Good = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
 
-
-/*struct notes
-{
-	int row;    //列数
-	int t;      //开始时间
-	int st;     //是否开始，0是未开始 
-	int line;   //落到多少行 
-}note1 = {0, 5, 0, 32};*/
+NOTE{
+	int track;
+	int type;
+};
 
 //移动光标
 void Pos(int x, int y)
@@ -120,64 +117,32 @@ int GetKey()
 	}
 }
 
-//判断音符
-void JudgeNote(int track)
+//表现判定
+void Perform(int perform)
 {
-	int i,input;
-	PrintNote(track,3,1);
-	for(i = 3 ; i < 35 ; i++)
+	Pos(26,29);
+	switch(perform)
 	{
-		Sleep(T);
-		PrintNote(track,i,0);
-		PrintNote(track,i+1,1);
-		input=GetKey();
-		if(input == track)
-		{
-			if(i == 31)
-			{
-				Pos(28,29);
-				printf("Perfect");
-				Score += 20;
-				COMBO++;
-				Perfect++;
-				PrintNote(track,i+1,0);
-				break;
-			}
-			else if(i == 30 || i == 32)
-			{
-				Pos(28,29);
-				printf("  Good  ");
-				Score += 10;
-				COMBO++;
-				Good++;
-				PrintNote(track,i+1,0);
-				break;
-			}
-			else if(i == 29 || i == 33 || i == 34)
-			{
-				Pos(28,29);
-				printf("  Miss  ");
-				COMBO = 0;
-				Miss++;
-				Life -= 5;
-				PrintNote(track,i+1,0);
-				break;
-			}
-		}
-		else if(i == 34)
-		{
-			Pos(28,29);
+		case 0:
 			printf("  Miss  ");
 			COMBO = 0;
 			Miss++;
 			Life -= 5;
-			PrintNote(track,i+1,0);
-		}
+			break;
+		case 1:
+			printf("  Good  ");
+			Score += 10;
+			COMBO++;
+			Good++;
+			break;
+		case 2:
+			printf("Perfect!");
+			Score += 20;
+			COMBO++;
+			Perfect++;
+			break;
 	}
-	RefreshData();
-	PrintNote(track,35,0);
 }
-
 //数据更新
 void RefreshData()
 {
@@ -189,53 +154,90 @@ void RefreshData()
 	printf("%d ", Life);
 }
 
-/*
-void JudgeNote(int i)
+//判断音符
+void JudgeNote(int track)
 {
-	//for(;;)
-	//{
-	//	if(note1.line > 30)	//continue;
-		if(note1.st == 0)
+	if(track==0)
+	{
+		Sleep(32*T);
+	}
+	else
+	{
+		int i,input;
+		PrintNote(track,3,1);
+		for(i = 3 ; i < 35 ; i++)
 		{
-			if(note1.t == 5)	i++;//continue;
-			else	note1.st = 1;
+			Sleep(T);
+			PrintNote(track,i,0);
+			PrintNote(track,i+1,1);
+			input=GetKey();
+			if(input == track)
+			{
+				if(i == 31)
+				{
+					Perform(2);
+					PrintNote(track,i+1,0);
+					break;
+				}
+				else if(i == 30 || i == 32)
+				{
+					Perform(1);
+					PrintNote(track,i+1,0);
+					break;
+				}
+				else if(i == 29 || i == 33 || i == 34)
+				{
+					Perform(0);
+					PrintNote(track,i+1,0);
+					break;
+				}
+			}
+			else if(i == 34)
+			{
+				Perform(0);
+				PrintNote(track,i+1,0);
+			}
 		}
-		if(note1.st == 1)
-		{
-			if(note1.line == 32)
-			{
-				Perfect++;
-				COMBO++;
-				Score += 20;
-			}
-			if(note1.line == 31 || note1.line == 33)
-			{
-				Great++;
-				COMBO++;
-				Score += 10;
-			}
-			if(note1.line == 30 || note1.line == 34)
-			{
-				Miss++;
-				COMBO = 0;
-				Life -= 10;
-			}
-		}
-	//}	
-}*/
+		RefreshData();
+		PrintNote(track,35,0);
+	}
+}
+
+//读取谱面
+int ReadMap(NOTE *p, char filename[]){
+	int i;
+	FILE *fp;
+	fp=fopen(filename,"r");
+	for(i=0;!feof(fp);i++)
+	{
+		fscanf(fp,"%d %d\n",&(*(p+i)).track,&(*(p+i)).type);
+	}
+	fclose(fp);
+	return i;
+}
+
+//播放谱面
+void PlayMap(char filename[])
+{
+	NOTE *mp;
+	int i,num=ReadMap(mp,filename);
+	for(i=0;i<num;i++)
+	{
+		printf("%d \n",(*(mp+i)).track);
+		JudgeNote((*(mp+i)).track);
+	}
+}
 
 int main()
 {
 	system("color 0F&mode con cols=60 lines=40");
 	HideCursor();
 	DrawBG();
-	//NoteDrop(5);
-	//NoteDrop(4);
-	//GetKey();
-	//getch();
-	JudgeNote(2);
-	JudgeNote(4);
 	JudgeNote(3);
+	JudgeNote(6);
+	JudgeNote(0);
+	JudgeNote(2);
+	PlayMap("test.txt");
 	JudgeNote(6);
 	return 0;
 }
