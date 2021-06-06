@@ -4,14 +4,18 @@
 #include <Windows.h>
 
 #define T 25
-/*int Perfect = 0, Great = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
-struct notes
+int Perfect = 0, Good = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
+
+
+/*struct notes
 {
 	int row;    //列数
 	int t;      //开始时间
 	int st;     //是否开始，0是未开始 
 	int line;   //落到多少行 
 }note1 = {0, 5, 0, 32};*/
+
+//移动光标
 void Pos(int x, int y)
 {
         COORD pos;
@@ -22,6 +26,7 @@ void Pos(int x, int y)
         SetConsoleCursorPosition(hOutput, pos);
 }
  
+ //隐藏光标
 void HideCursor()
 {
         CONSOLE_CURSOR_INFO cursor_info = {1,0};
@@ -126,26 +131,62 @@ void JudgeNote(int track)
 		PrintNote(track,i,0);
 		PrintNote(track,i+1,1);
 		input=GetKey();
-		if(input==track)
+		if(input == track)
 		{
-			if(i==31)
+			if(i == 31)
 			{
+				Pos(28,29);
 				printf("Perfect");
+				Score += 20;
+				COMBO++;
+				Perfect++;
+				PrintNote(track,i+1,0);
 				break;
 			}
-			else if(i==30||i==32)
+			else if(i == 30 || i == 32)
 			{
-				printf("Good");
+				Pos(28,29);
+				printf("  Good  ");
+				Score += 10;
+				COMBO++;
+				Good++;
+				PrintNote(track,i+1,0);
 				break;
 			}
-			else if(i==29||i==33||i==34)
+			else if(i == 29 || i == 33 || i == 34)
 			{
-				printf("Miss");
+				Pos(28,29);
+				printf("  Miss  ");
+				COMBO = 0;
+				Miss++;
+				Life -= 5;
+				PrintNote(track,i+1,0);
 				break;
 			}
 		}
+		else if(i == 34)
+		{
+			Pos(28,29);
+			printf("  Miss  ");
+			COMBO = 0;
+			Miss++;
+			Life -= 5;
+			PrintNote(track,i+1,0);
+		}
 	}
+	RefreshData();
 	PrintNote(track,35,0);
+}
+
+//数据更新
+void RefreshData()
+{
+	Pos(10,1);
+	printf("%d ", Score);
+	Pos(34,1);
+	printf("%d ", COMBO);
+	Pos(55,1);
+	printf("%d ", Life);
 }
 
 /*
