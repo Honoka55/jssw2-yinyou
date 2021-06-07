@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <Windows.h>
 
-#define T 35
+#define T 40
 #define NOTE struct note
 int Perfect = 0, Good = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
 
@@ -82,25 +82,10 @@ void PrintNote(int track, int j, int note)
 	}
 }
 
-//音符降落 
-void NoteDrop(int track)
-{
-	int i;
-	PrintNote(track,3,1);
-	int start = clock();
-	for(i = 3 ; i < 35 ; i++)
-	{
-		Sleep(T);
-		PrintNote(track,i,0);
-		PrintNote(track,i+1,1);
-	}
-} 
-
 //获取按键 
 int GetKey()
 {
 	int i;
-	int start = clock();
 	if(kbhit())                              //键盘有输入开始执行 
 	{
 		i = (int)(getch());
@@ -118,9 +103,10 @@ int GetKey()
 }
 
 //表现判定
-void Perform(int perform)
+void Perform(int perform, int shift)
 {
-	Pos(26,29);
+	Pos(26,29-shift);
+	int start=clock();
 	switch(perform)
 	{
 		case 0:
@@ -141,6 +127,9 @@ void Perform(int perform)
 			COMBO++;
 			Perfect++;
 			break;
+		case -1:                  //清空判定区显示
+			printf("        ");
+			break;
 	}
 }
 //数据更新
@@ -155,11 +144,57 @@ void RefreshData()
 }
 
 //判断音符
-void JudgeNote(int track)
+int JudgeNote(int i, int input, int track, int shift)
+{
+	input=GetKey();
+	if(input == track)
+	{
+		if(i == 31)
+		{
+			Perform(2,shift);
+			PrintNote(track,i,0);
+			PrintNote(track,i+1,0);
+			return 1;
+		}
+		else if(i == 30 || i == 32)
+		{
+			Perform(1,shift);
+			PrintNote(track,i,0);
+			PrintNote(track,i+1,0);
+			return 1;
+		}
+		else if(i == 29 || i == 33)
+		{
+			Perform(0,shift);
+			PrintNote(track,i,0);
+			PrintNote(track,i+1,0);
+			return 1;
+		}
+	}
+	/*else if(i == 34)
+	{
+		Perform(0,shift);
+		PrintNote(track,i,0);
+		PrintNote(track,i+1,0);
+		return 1;
+	}*/
+	else if(i == 18)  //清空对上一个音符判定的显示
+	{
+		Perform(-1,1);
+		Perform(-1,0);
+	}
+	return 0;
+}
+
+//判断音符
+void JudgeSingle(int track)
 {
 	if(track==0)
 	{
-		Sleep(32*T);
+		Sleep(16*T);
+		Perform(-1,1);  //清空对上一个音符判定的显示
+		Perform(-1,0);
+		Sleep(16*T);
 	}
 	else
 	{
@@ -170,37 +205,39 @@ void JudgeNote(int track)
 			Sleep(T);
 			PrintNote(track,i,0);
 			PrintNote(track,i+1,1);
-			input=GetKey();
-			if(input == track)
-			{
-				if(i == 31)
-				{
-					Perform(2);
-					PrintNote(track,i+1,0);
-					break;
-				}
-				else if(i == 30 || i == 32)
-				{
-					Perform(1);
-					PrintNote(track,i+1,0);
-					break;
-				}
-				else if(i == 29 || i == 33 || i == 34)
-				{
-					Perform(0);
-					PrintNote(track,i+1,0);
-					break;
-				}
-			}
-			else if(i == 34)
-			{
-				Perform(0);
-				PrintNote(track,i+1,0);
-			}
+			JudgeNote(i,input,track,0);	
+			if(JudgeNote(i,input,track,0)==1) break;
 		}
 		RefreshData();
 		PrintNote(track,35,0);
 	}
+}
+
+//判断双押
+void JudgePair(int track1, int track2)
+{
+	int i,input;
+	PrintNote(track1,3,1);
+	PrintNote(track2,3,1);
+	for(i = 3 ; i < 35 ; i++)
+	{
+		Sleep(T);
+		if(!JudgeNote(i,input,track1,1))
+		{
+			PrintNote(track1,i,0);
+			PrintNote(track1,i+1,1);
+			JudgeNote(i,input,track1,1);
+		}
+		if(!JudgeNote(i,input,track2,0))
+		{
+			PrintNote(track2,i,0);
+			PrintNote(track2,i+1,1);
+			JudgeNote(i,input,track2,0);
+		}
+	}
+	RefreshData();
+	PrintNote(track1,35,0);
+	PrintNote(track2,35,0);
 }
 
 //读取谱面
@@ -221,10 +258,11 @@ void PlayMap(char filename[])
 {
 	NOTE *mp;
 	int i,num=ReadMap(mp,filename);
+	mp=malloc(sizeof(NOTE)*num);
 	for(i=0;i<num;i++)
 	{
 		printf("%d \n",(*(mp+i)).track);
-		JudgeNote((*(mp+i)).track);
+		JudgeSingle((*(mp+i)).track);
 	}
 }
 
@@ -233,11 +271,18 @@ int main()
 	system("color 0F&mode con cols=60 lines=40");
 	HideCursor();
 	DrawBG();
-	JudgeNote(3);
-	JudgeNote(6);
-	JudgeNote(0);
-	JudgeNote(2);
-	PlayMap("test.txt");
-	JudgeNote(6);
+	JudgeSingle(1);
+	JudgeSingle(2);
+	JudgeSingle(3);
+	JudgeSingle(0);
+	JudgePair(1,6);
+	JudgePair(2,5);
+	JudgePair(3,4);
+	JudgeSingle(0);
+	JudgeSingle(6);
+	JudgeSingle(5);
+	JudgeSingle(4);
+	//PlayMap("test.txt");
+	JudgeSingle(6);
 	return 0;
 }
