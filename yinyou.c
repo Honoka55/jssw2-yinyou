@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
+#include <conio.h>
 #include <Windows.h>
 
 #define T 40
@@ -24,20 +24,47 @@ void Pos(int x, int y)
         SetConsoleCursorPosition(hOutput, pos);
 }
  
- //隐藏光标
+//隐藏光标
 void HideCursor()
 {
         CONSOLE_CURSOR_INFO cursor_info = {1,0};
         SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
 
-//绘制界面 
-void DrawBG()
+//绘制选歌界面
+void DrawSonglist()
 {
-	
-    printf(" Playing Song: Various Artist - Untitled                    \n");
+	void DrawBG(char* title);
+	void PlayMap(char filename[]);
+	system("dir *.txt /b > songlist.log");
+	int i,num=7,choice;
+	char *songlist[20];
+	FILE *fp;
+	fp=fopen("songlist.log","r");
+	for(i=0;i<num;i++)
+	{
+		songlist[i]=(char*)malloc(128*sizeof(char));
+		fscanf(fp,"%s\n",songlist[i]);
+	}
+	fclose(fp);
+	system("del songlist.log");
+	for(i=0;i<num;i++)
+	{
+		printf("%2d. %s\n",i+1,songlist[i]);
+	}
+	printf("Please input song number:");
+	scanf("%d",&choice);
+	DrawBG(songlist[choice-1]);
+	PlayMap(songlist[choice-1]);
+}
+
+//绘制界面 
+void DrawBG(char* title)
+{
+	Pos(0,0);
+    printf(" Playing Song: %s\n",title);
 	printf("   Score: 0                COMBO: 0              Life: 100  \n");
-    int i, j;
+    int j;
     printf("/----------------------------------------------------------\\\n");
     for(j = 0; j < 32;j++)
 	{
@@ -107,7 +134,6 @@ int GetKey()
 void Perform(int perform, int shift)
 {
 	Pos(26,29-shift);
-	int start=clock();
 	switch(perform)
 	{
 		case 0:
@@ -291,9 +317,10 @@ void PlayMap(char filename[])
 
 int main()
 {
-	system("color 0F&mode con cols=60 lines=40");
+	system("color 0F&mode con cols=60 lines=40"); //color OF& 是为了兼容Dev C++
 	HideCursor();
-	DrawBG();
-	PlayMap("test.txt");
+	DrawSonglist();
+	//DrawBG();
+	//PlayMap("test.txt");
 	return 0;
 }
