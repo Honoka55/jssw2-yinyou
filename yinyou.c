@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <Windows.h>
-
-#define T 40
 #define NOTE struct note
-int Perfect = 0, Good = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
+
+int Perfect, Good, Combo, Miss, Life, Score, *T;
 
 NOTE{
 	int track;
@@ -24,10 +23,10 @@ void Pos(int x, int y)
         SetConsoleCursorPosition(hOutput, pos);
 }
  
-//隐藏光标
-void HideCursor()
+//显示和隐藏光标
+void CursorVisible(int i)
 {
-        CONSOLE_CURSOR_INFO cursor_info = {1,0};
+        CONSOLE_CURSOR_INFO cursor_info = {1,i};
         SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
 
@@ -37,7 +36,7 @@ void DrawSonglist()
 	void DrawBG(char* title);
 	void PlayMap(char filename[]);
 	system("dir *.txt /b > songlist.log");
-	int i,num=7,choice;
+	int i,num=2,choice;
 	char *songlist[20];
 	FILE *fp;
 	fp=fopen("songlist.log","r");
@@ -48,22 +47,36 @@ void DrawSonglist()
 	}
 	fclose(fp);
 	system("del songlist.log");
-	for(i=0;i<num;i++)
+	while(1)
 	{
-		printf("%2d. %s\n",i+1,songlist[i]);
+		Perfect = 0;
+		Good = 0;
+		Combo = 0;
+		Miss = 0;
+		Life = 100;
+		Score = 0;
+		system("cls");
+		Pos(0,0);
+		for(i=0;i<num;i++)
+		{
+			printf("%2d. %s\n",i+1,songlist[i]);
+		}
+		printf("\nPlease input song number and Enter:");
+		CursorVisible(1);
+		scanf("%d",&choice);
+		DrawBG(songlist[choice-1]);
+		PlayMap(songlist[choice-1]);
+		getch();
 	}
-	printf("Please input song number:");
-	scanf("%d",&choice);
-	DrawBG(songlist[choice-1]);
-	PlayMap(songlist[choice-1]);
 }
 
 //绘制界面 
 void DrawBG(char* title)
 {
+	CursorVisible(0);
 	Pos(0,0);
     printf(" Playing Song: %s\n",title);
-	printf("   Score: 0                COMBO: 0              Life: 100  \n");
+	printf("   Score: 0                Combo: 0              Life: 100  \n");
     int j;
     printf("/----------------------------------------------------------\\\n");
     for(j = 0; j < 32;j++)
@@ -138,20 +151,20 @@ void Perform(int perform, int shift)
 	{
 		case 0:
 			printf("  Miss  ");
-			COMBO = 0;
+			Combo = 0;
 			Miss++;
 			Life -= 5;
 			break;
 		case 1:
 			printf("  Good  ");
 			Score += 10;
-			COMBO++;
+			Combo++;
 			Good++;
 			break;
 		case 2:
 			printf("Perfect!");
 			Score += 20;
-			COMBO++;
+			Combo++;
 			Perfect++;
 			break;
 		case -1:                  //清空判定区显示
@@ -165,7 +178,7 @@ void RefreshData()
 	Pos(10,1);
 	printf("%d ", Score);
 	Pos(34,1);
-	printf("%d ", COMBO);
+	printf("%d ", Combo);
 	Pos(55,1);
 	printf("%d ", Life);
 }
@@ -218,10 +231,10 @@ void JudgeSingle(int track)
 {
 	if(track==0)
 	{
-		Sleep(16*T);
+		Sleep(16*(*T));
 		Perform(-1,1);  //清空对上一个音符判定的显示
 		Perform(-1,0);
-		Sleep(16*T);
+		Sleep(16*(*T));
 	}
 	else
 	{
@@ -229,7 +242,7 @@ void JudgeSingle(int track)
 		PrintNote(track,3,1);
 		for(i = 3 ; i < 35 ; i++)
 		{
-			Sleep(T);
+			Sleep(*T);
 			PrintNote(track,i,0);
 			PrintNote(track,i+1,1);	
 			if(JudgeNote(i,input,track,0)) break;
@@ -247,7 +260,7 @@ void JudgePair(int track1, int track2)
 	PrintNote(track2,3,1);
 	for(i = 3 ; i < 35 ; i++)
 	{
-		Sleep(T);
+		Sleep(*T);
 		if(!flag1)
 		{
 			PrintNote(track1,i,0);
@@ -267,21 +280,24 @@ void JudgePair(int track1, int track2)
 }
 
 //演出成功界面
-void Finish()
+void Clear()
 {
 	if(Miss == 0)	
 	{
-		Pos(26,15);
+		Pos(12,15);
 		printf("FULL COMBO!!");
 	}
-	Pos(20,16);
+	Pos(12,16);
 	printf("Your score is %d", Score);
+	Pos(12,17);
+	printf("Press any key to start a new game", Score);
 }
 
 //读取谱面
 NOTE* ReadMap(char filename[]){
 	FILE *fp;
 	fp=fopen(filename,"r");
+	fscanf(fp,"%d\n",T);
 	NOTE *head, *rear,*p;
 	rear=head=NULL;
 	while(!feof(fp))
@@ -319,21 +335,20 @@ void PlayMap(char filename[])
 		if(Life <= 0)
 		{
 			Life = 0;
-			Pos(26,15);
-			printf("You Died!Five!");
+			RefreshData();
+			Pos(12,15);
+			printf("You Died! Five!");
 			break;
 		}
 		p=p->next;
 	}
-	Finish();
+	Clear();
 }
 
 int main()
 {
 	system("color 0F&mode con cols=60 lines=40"); //color OF& 是为了兼容Dev C++
-	HideCursor();
+	T=malloc(sizeof(int));
 	DrawSonglist();
-	//DrawBG();
-	//PlayMap("test.txt");
 	return 0;
 }
