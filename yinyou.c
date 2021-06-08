@@ -266,6 +266,18 @@ void JudgePair(int track1, int track2)
 	PrintNote(track2,35,0);
 }
 
+//演出成功界面
+void Finish()
+{
+	if(Miss == 0)	
+	{
+		Pos(26,15);
+		printf("FULL COMBO!!");
+	}
+	Pos(20,16);
+	printf("Your score is %d", Score);
+}
+
 //读取谱面
 NOTE* ReadMap(char filename[]){
 	FILE *fp;
@@ -313,6 +325,7 @@ void PlayMap(char filename[])
 		}
 		p=p->next;
 	}
+	Finish();
 }
 
 int main()
