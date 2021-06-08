@@ -51,7 +51,7 @@ AutoIncBuildNr=0
 SyncProduct=1
 
 [Unit1]
-FileName=..\..\jssw2-yinyou\yinyou.c
+FileName=yinyou.c
 CompileCpp=0
 Folder=
 Compile=1

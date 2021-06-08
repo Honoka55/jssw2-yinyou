@@ -65,12 +65,13 @@ void DrawSonglist()
 		{
 			printf("%2d. %s\n",i+1,song[i]);
 		}
-		printf("\nPlease input the number and Enter:");
+		printf("\n\nPlease make sure your input method is in English state!\n\nPlease input the number and Enter:");
 		CursorVisible(1);
 		scanf("%d",&choice);
 		if(choice==0) exit(0);
 		DrawBG(song[choice-1]);
 		PlayMap(song[choice-1]);
+		PlaySound(NULL,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
 		system("pause");
 	}
 }
@@ -197,21 +198,18 @@ int JudgeNote(int i, int input, int track, int shift)
 		if(i == 31)
 		{
 			Perform(2,shift);
-			PrintNote(track,i,0);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
 		else if(i == 30 || i == 32)
 		{
 			Perform(1,shift);
-			PrintNote(track,i,0);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
 		else if(i == 29 || i == 33)
 		{
 			Perform(0,shift);
-			PrintNote(track,i,0);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
@@ -219,7 +217,6 @@ int JudgeNote(int i, int input, int track, int shift)
 	else if(i == 34)
 	{
 		Perform(0,shift);
-		PrintNote(track,i,0);
 		PrintNote(track,i+1,0);
 		return 1;
 	}
@@ -231,7 +228,7 @@ int JudgeNote(int i, int input, int track, int shift)
 	return 0;
 }
 
-//ÅÐ¶ÏÒô·û
+//ÅÐ¶Ïµ¥Ñº 
 void JudgeSingle(int track)
 {
 	if(track==0)
