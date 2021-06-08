@@ -10,7 +10,8 @@ int Perfect = 0, Good = 0, COMBO = 0, Miss = 0, Life = 100, Score = 0;
 NOTE{
 	int track;
 	int type;
-};
+	NOTE *next;
+};  //定义音符链表结点
 
 //移动光标
 void Pos(int x, int y)
@@ -171,13 +172,13 @@ int JudgeNote(int i, int input, int track, int shift)
 			return 1;
 		}
 	}
-	/*else if(i == 34)
+	else if(i == 34)
 	{
 		Perform(0,shift);
 		PrintNote(track,i,0);
 		PrintNote(track,i+1,0);
 		return 1;
-	}*/
+	}
 	else if(i == 18)  //清空对上一个音符判定的显示
 	{
 		Perform(-1,1);
@@ -241,28 +242,40 @@ void JudgePair(int track1, int track2)
 }
 
 //读取谱面
-int ReadMap(NOTE *p, char filename[]){
-	int i;
+NOTE* ReadMap(char filename[]){
 	FILE *fp;
 	fp=fopen(filename,"r");
-	for(i=0;!feof(fp);i++)
+	NOTE *head, *rear,*p;
+	rear=head=NULL;
+	while(!feof(fp))
 	{
-		fscanf(fp,"%d %d\n",&(*(p+i)).track,&(*(p+i)).type);
+		p=(NOTE*)malloc(sizeof(NOTE));
+		fscanf(fp,"%d %d\n",&p->track,&p->type);
+		if(rear==NULL)
+		{
+			head=p;
+			p->next=NULL;
+			rear=p;
+		}
+		else
+		{
+			p->next=rear->next;
+			rear->next=p;
+			rear=p;
+		}
 	}
 	fclose(fp);
-	return i;
+	return head;
 }
 
 //播放谱面
 void PlayMap(char filename[])
 {
-	NOTE *mp;
-	int i,num=ReadMap(mp,filename);
-	mp=malloc(sizeof(NOTE)*num);
-	for(i=0;i<num;i++)
+	NOTE *p=ReadMap(filename);
+	while(p!=NULL)
 	{
-		printf("%d \n",(*(mp+i)).track);
-		JudgeSingle((*(mp+i)).track);
+		JudgeSingle(p->track);
+		p=p->next;
 	}
 }
 
@@ -271,7 +284,7 @@ int main()
 	system("color 0F&mode con cols=60 lines=40");
 	HideCursor();
 	DrawBG();
-	JudgeSingle(1);
+	/*JudgeSingle(1);
 	JudgeSingle(2);
 	JudgeSingle(3);
 	JudgeSingle(0);
@@ -281,8 +294,8 @@ int main()
 	JudgeSingle(0);
 	JudgeSingle(6);
 	JudgeSingle(5);
-	JudgeSingle(4);
-	//PlayMap("test.txt");
+	JudgeSingle(4);*/ 
+	PlayMap("test.txt");
 	JudgeSingle(6);
 	return 0;
 }
