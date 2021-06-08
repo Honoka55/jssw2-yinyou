@@ -206,7 +206,7 @@ void JudgeSingle(int track)
 			Sleep(T);
 			PrintNote(track,i,0);
 			PrintNote(track,i+1,1);	
-			if(JudgeNote(i,input,track,0)==1) break;
+			if(JudgeNote(i,input,track,0)) break;
 		}
 		RefreshData();
 		PrintNote(track,35,0);
@@ -216,23 +216,23 @@ void JudgeSingle(int track)
 //判断双押
 void JudgePair(int track1, int track2)
 {
-	int i,input;
+	int i,input,flag1=0,flag2=0;
 	PrintNote(track1,3,1);
 	PrintNote(track2,3,1);
 	for(i = 3 ; i < 35 ; i++)
 	{
 		Sleep(T);
-		if(!JudgeNote(i,input,track1,1))
+		if(!flag1)
 		{
 			PrintNote(track1,i,0);
 			PrintNote(track1,i+1,1);
-			JudgeNote(i,input,track1,1);
+			flag1=JudgeNote(i,input,track1,1);
 		}
-		if(!JudgeNote(i,input,track2,0))
+		if(!flag2)
 		{
 			PrintNote(track2,i,0);
 			PrintNote(track2,i+1,1);
-			JudgeNote(i,input,track2,0);
+			flag2=JudgeNote(i,input,track2,0);
 		}
 	}
 	RefreshData();
@@ -275,8 +275,8 @@ void PlayMap(char filename[])
 	{
 		switch(p->type)
 		{
-			case 1: JudgeSingle(p->track);break;
-			case 2: JudgePair(p->track/10,p->track%10);break;
+			case 1: JudgeSingle(p->track); break;
+			case 2: JudgePair(p->track/10,p->track%10); break;
 		}
 		if(Life <= 0)
 		{
@@ -294,17 +294,6 @@ int main()
 	system("color 0F&mode con cols=60 lines=40");
 	HideCursor();
 	DrawBG();
-	/*JudgeSingle(1);
-	JudgeSingle(2);
-	JudgeSingle(3);
-	JudgeSingle(0);
-	JudgePair(1,6);
-	JudgePair(2,5);
-	JudgePair(3,4);
-	JudgeSingle(0);
-	JudgeSingle(6);
-	JudgeSingle(5);
-	JudgeSingle(4);*/ 
 	PlayMap("test.txt");
 	return 0;
 }
