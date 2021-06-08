@@ -205,8 +205,7 @@ void JudgeSingle(int track)
 		{
 			Sleep(T);
 			PrintNote(track,i,0);
-			PrintNote(track,i+1,1);
-			JudgeNote(i,input,track,0);	
+			PrintNote(track,i+1,1);	
 			if(JudgeNote(i,input,track,0)==1) break;
 		}
 		RefreshData();
@@ -274,7 +273,18 @@ void PlayMap(char filename[])
 	NOTE *p=ReadMap(filename);
 	while(p!=NULL)
 	{
-		JudgeSingle(p->track);
+		switch(p->type)
+		{
+			case 1: JudgeSingle(p->track);break;
+			case 2: JudgePair(p->track/10,p->track%10);break;
+		}
+		if(Life <= 0)
+		{
+			Life = 0;
+			Pos(26,15);
+			printf("You Died!Five!");
+			break;
+		}
 		p=p->next;
 	}
 }
@@ -296,6 +306,5 @@ int main()
 	JudgeSingle(5);
 	JudgeSingle(4);*/ 
 	PlayMap("test.txt");
-	JudgeSingle(6);
 	return 0;
 }
