@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <conio.h>
 #include <Windows.h>
+#include <mmsystem.h>
 #define NOTE struct note
 
 int Perfect, Good, Combo, Miss, Life, Score, *T;
@@ -10,10 +12,10 @@ NOTE{
 	int track;
 	int type;
 	NOTE *next;
-};  //å®šä¹‰éŸ³ç¬¦é“¾è¡¨ç»“ç‚¹
+};  //¶¨ÒåÒô·ûÁ´±í½áµã
 
-//ç§»åŠ¨å…‰æ ‡
-void Pos(int x, int y)
+//ÒÆ¶¯¹â±ê
+void MoveCursor(int x, int y)
 {
         COORD pos;
         HANDLE hOutput;
@@ -23,27 +25,28 @@ void Pos(int x, int y)
         SetConsoleCursorPosition(hOutput, pos);
 }
  
-//æ˜¾ç¤ºå’Œéšè—å…‰æ ‡
+//ÏÔÊ¾ºÍÒþ²Ø¹â±ê
 void CursorVisible(int i)
 {
         CONSOLE_CURSOR_INFO cursor_info = {1,i};
         SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
 
-//ç»˜åˆ¶é€‰æ­Œç•Œé¢
+//»æÖÆÑ¡¸è½çÃæ
 void DrawSonglist()
 {
 	void DrawBG(char* title);
 	void PlayMap(char filename[]);
 	system("dir *.txt /b > songlist.log");
 	int i,num=2,choice;
-	char *songlist[20];
+	char *song[32];
 	FILE *fp;
 	fp=fopen("songlist.log","r");
 	for(i=0;i<num;i++)
 	{
-		songlist[i]=(char*)malloc(128*sizeof(char));
-		fscanf(fp,"%s\n",songlist[i]);
+		song[i]=(char*)malloc(32*sizeof(char));
+		fscanf(fp,"%s\n",song[i]);
+		song[i][strlen(song[i])-4]='\0';
 	}
 	fclose(fp);
 	system("del songlist.log");
@@ -56,25 +59,27 @@ void DrawSonglist()
 		Life = 100;
 		Score = 0;
 		system("cls");
-		Pos(0,0);
+		MoveCursor(0,0);
+		printf(" 0. Exit Game\n");
 		for(i=0;i<num;i++)
 		{
-			printf("%2d. %s\n",i+1,songlist[i]);
+			printf("%2d. %s\n",i+1,song[i]);
 		}
-		printf("\nPlease input song number and Enter:");
+		printf("\nPlease input the number and Enter:");
 		CursorVisible(1);
 		scanf("%d",&choice);
-		DrawBG(songlist[choice-1]);
-		PlayMap(songlist[choice-1]);
-		getch();
+		if(choice==0) exit(0);
+		DrawBG(song[choice-1]);
+		PlayMap(song[choice-1]);
+		system("pause");
 	}
 }
 
-//ç»˜åˆ¶ç•Œé¢ 
+//»æÖÆ½çÃæ 
 void DrawBG(char* title)
 {
 	CursorVisible(0);
-	Pos(0,0);
+	MoveCursor(0,0);
     printf(" Playing Song: %s\n",title);
 	printf("   Score: 0                Combo: 0              Life: 100  \n");
     int j;
@@ -90,17 +95,17 @@ void DrawBG(char* title)
     printf("\\----------------------------------------------------------/\n");
 }
 
-//æ‰“å°éŸ³ç¬¦ 
+//´òÓ¡Òô·û 
 void PrintNote(int track, int j, int note)
 {
 	switch(track)
 	{
-		case 1: Pos(4,j); break;
-		case 2: Pos(13,j); break;
-		case 3: Pos(22,j); break;
-		case 4: Pos(33,j); break;
-		case 5: Pos(42,j); break;
-		case 6: Pos(51,j); break;
+		case 1: MoveCursor(4,j); break;
+		case 2: MoveCursor(13,j); break;
+		case 3: MoveCursor(22,j); break;
+		case 4: MoveCursor(33,j); break;
+		case 5: MoveCursor(42,j); break;
+		case 6: MoveCursor(51,j); break;
 	}
 	if(note == 1) printf("*****");
 	else if(note == 0)
@@ -123,11 +128,11 @@ void PrintNote(int track, int j, int note)
 	}
 }
 
-//èŽ·å–æŒ‰é”® 
+//»ñÈ¡°´¼ü 
 int GetKey()
 {
 	int i;
-	if(kbhit())                              //é”®ç›˜æœ‰è¾“å…¥å¼€å§‹æ‰§è¡Œ 
+	if(kbhit())                              //¼üÅÌÓÐÊäÈë¿ªÊ¼Ö´ÐÐ 
 	{
 		i = (int)(getch());
 	}
@@ -143,10 +148,10 @@ int GetKey()
 	}
 }
 
-//è¡¨çŽ°åˆ¤å®š
+//±íÏÖÅÐ¶¨
 void Perform(int perform, int shift)
 {
-	Pos(26,29-shift);
+	MoveCursor(26,29-shift);
 	switch(perform)
 	{
 		case 0:
@@ -167,23 +172,23 @@ void Perform(int perform, int shift)
 			Combo++;
 			Perfect++;
 			break;
-		case -1:                  //æ¸…ç©ºåˆ¤å®šåŒºæ˜¾ç¤º
+		case -1:                  //Çå¿ÕÅÐ¶¨ÇøÏÔÊ¾
 			printf("        ");
 			break;
 	}
 }
-//æ•°æ®æ›´æ–°
+//Êý¾Ý¸üÐÂ
 void RefreshData()
 {
-	Pos(10,1);
+	MoveCursor(10,1);
 	printf("%d ", Score);
-	Pos(34,1);
+	MoveCursor(34,1);
 	printf("%d ", Combo);
-	Pos(55,1);
+	MoveCursor(55,1);
 	printf("%d ", Life);
 }
 
-//åˆ¤æ–­éŸ³ç¬¦
+//ÅÐ¶ÏÒô·û
 int JudgeNote(int i, int input, int track, int shift)
 {
 	input=GetKey();
@@ -218,7 +223,7 @@ int JudgeNote(int i, int input, int track, int shift)
 		PrintNote(track,i+1,0);
 		return 1;
 	}
-	else if(i == 18)  //æ¸…ç©ºå¯¹ä¸Šä¸€ä¸ªéŸ³ç¬¦åˆ¤å®šçš„æ˜¾ç¤º
+	else if(i == 18)  //Çå¿Õ¶ÔÉÏÒ»¸öÒô·ûÅÐ¶¨µÄÏÔÊ¾
 	{
 		Perform(-1,1);
 		Perform(-1,0);
@@ -226,13 +231,13 @@ int JudgeNote(int i, int input, int track, int shift)
 	return 0;
 }
 
-//åˆ¤æ–­éŸ³ç¬¦
+//ÅÐ¶ÏÒô·û
 void JudgeSingle(int track)
 {
 	if(track==0)
 	{
 		Sleep(16*(*T));
-		Perform(-1,1);  //æ¸…ç©ºå¯¹ä¸Šä¸€ä¸ªéŸ³ç¬¦åˆ¤å®šçš„æ˜¾ç¤º
+		Perform(-1,1);  //Çå¿Õ¶ÔÉÏÒ»¸öÒô·ûÅÐ¶¨µÄÏÔÊ¾
 		Perform(-1,0);
 		Sleep(16*(*T));
 	}
@@ -252,7 +257,7 @@ void JudgeSingle(int track)
 	}
 }
 
-//åˆ¤æ–­åŒæŠ¼
+//ÅÐ¶ÏË«Ñº
 void JudgePair(int track1, int track2)
 {
 	int i,input,flag1=0,flag2=0;
@@ -279,21 +284,20 @@ void JudgePair(int track1, int track2)
 	PrintNote(track2,35,0);
 }
 
-//æ¼”å‡ºæˆåŠŸç•Œé¢
+//ÑÝ³ö³É¹¦½çÃæ
 void Clear()
 {
 	if(Miss == 0)	
 	{
-		Pos(12,15);
+		MoveCursor(18,15);
 		printf("FULL COMBO!!");
 	}
-	Pos(12,16);
+	MoveCursor(18,16);
 	printf("Your score is %d", Score);
-	Pos(12,17);
-	printf("Press any key to start a new game", Score);
+	MoveCursor(18,17);
 }
 
-//è¯»å–è°±é¢
+//¶ÁÈ¡Æ×Ãæ
 NOTE* ReadMap(char filename[]){
 	FILE *fp;
 	fp=fopen(filename,"r");
@@ -321,10 +325,16 @@ NOTE* ReadMap(char filename[]){
 	return head;
 }
 
-//æ’­æ”¾è°±é¢
+//²¥·ÅÆ×Ãæ
 void PlayMap(char filename[])
 {
-	NOTE *p=ReadMap(filename);
+    char st[32],sw[32];
+    strcpy(st,filename);
+    strcat(st,".txt");
+    strcpy(sw,filename);
+    strcat(sw,".wav");
+	PlaySound(sw,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
+	NOTE *p=ReadMap(st);
 	while(p!=NULL)
 	{
 		switch(p->type)
@@ -336,7 +346,7 @@ void PlayMap(char filename[])
 		{
 			Life = 0;
 			RefreshData();
-			Pos(12,15);
+			MoveCursor(18,15);
 			printf("You Died! Five!");
 			break;
 		}
@@ -347,7 +357,8 @@ void PlayMap(char filename[])
 
 int main()
 {
-	system("color 0F&mode con cols=60 lines=40"); //color OF& æ˜¯ä¸ºäº†å…¼å®¹Dev C++
+	system("title jssw2-yinyou");
+	system("color 0F&mode con cols=60 lines=40");
 	T=malloc(sizeof(int));
 	DrawSonglist();
 	return 0;
