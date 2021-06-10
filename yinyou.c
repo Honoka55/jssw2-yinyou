@@ -36,17 +36,17 @@ void CursorVisible(int i)
 void DrawSonglist()
 {
 	void DrawBG(char* title);
-	void PlayMap(char filename[]);
-	system("dir *.txt /b > songlist.log");
-	int i,num=2,choice;
+	void PlayMap(char filename[], int level);
+	system("dir *.wav /b > songlist.log");
+	int i,num=2,choice,level;
 	char *song[32];
 	FILE *fp;
 	fp=fopen("songlist.log","r");
 	for(i=0;i<num;i++)
 	{
 		song[i]=(char*)malloc(32*sizeof(char));
-		fscanf(fp,"%s\n",song[i]);
-		song[i][strlen(song[i])-4]='\0';
+		fgets(song[i],32,fp);
+		song[i][strlen(song[i])-5]='\0';
 	}
 	fclose(fp);
 	system("del songlist.log");
@@ -69,8 +69,10 @@ void DrawSonglist()
 		CursorVisible(1);
 		scanf("%d",&choice);
 		if(choice==0) exit(0);
+		printf("\n\n 1. Easy\n 2. Normal\n\nPlease choose the level and Enter:");
+		scanf("%d",&level);
 		DrawBG(song[choice-1]);
-		PlayMap(song[choice-1]);
+		PlayMap(song[choice-1],level);
 		PlaySound(NULL,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
 		system("pause");
 	}
@@ -156,19 +158,19 @@ void Perform(int perform, int shift)
 	switch(perform)
 	{
 		case 0:
-			printf("  Miss  ");
+			printf("  Miss  \a");
 			Combo = 0;
 			Miss++;
 			Life -= 5;
 			break;
 		case 1:
-			printf("  Good  ");
+			printf("  Good  \a");
 			Score += 10;
 			Combo++;
 			Good++;
 			break;
 		case 2:
-			printf("Perfect!");
+			printf("Perfect!\a");
 			Score += 20;
 			Combo++;
 			Perfect++;
@@ -236,7 +238,7 @@ void JudgeSingle(int track)
 		Sleep(16*(*T));
 		Perform(-1,1);  //清空对上一个音符判定的显示
 		Perform(-1,0);
-		Sleep(16*(*T));
+		Sleep(16*(*T)); //TODO:可以考虑改成允许自由修改空音符时长以匹配歌曲BPM
 	}
 	else
 	{
@@ -323,11 +325,16 @@ NOTE* ReadMap(char filename[]){
 }
 
 //播放谱面
-void PlayMap(char filename[])
+void PlayMap(char filename[], int level)
 {
     char st[32],sw[32];
     strcpy(st,filename);
-    strcat(st,".txt");
+    switch(level)
+    {
+    	case 1: strcat(st,"E.txt"); break;
+    	case 2: strcat(st,"N.txt"); break;
+    	default: strcat(st,".txt"); break;
+	}
     strcpy(sw,filename);
     strcat(sw,".wav");
 	PlaySound(sw,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
