@@ -53,6 +53,7 @@ void DrawSonglist()
 {
 	void DrawBG(char* title);
 	void PlayMap(char filename[], int level);
+	void AutoPlayMap(char filename[], int level);
 	system("dir *.wav /b > songlist.log");
 	int i,num=2,choice,level;
 	char *song[32];
@@ -97,16 +98,17 @@ void DrawSonglist()
 			system("pause");
 			continue;
 		}
-		printf("\n\n 1. Easy\n 2. Normal\n\nPlease choose the level and Enter:");
+		printf("\n\n 1. Easy\n 2. Normal\n 3.Easy Auto\n 4.Normal Auto\nPlease choose the level and the mode then Enter:");
 		scanf("%d",&level);
-		if(level != 1 && level != 2)
+		if(level != 1 && level != 2 && level != 3 && level != 4)
 		{
 			printf("\nInvalid level!\n");
 			system("pause");
 			continue;
 		}
 		DrawBG(song[choice-1]);
-		PlayMap(song[choice-1],level);
+		if (level == 1 || level == 2)	PlayMap(song[choice-1],level);
+		if (level == 3 || level == 4)	AutoplayMap(song[choice-1],level);
 		PlaySound(NULL,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
 		system("pause");
 	}
@@ -231,26 +233,26 @@ int JudgeNote(int i, int input, int track, int shift)
 	input=GetKey();
 	if(input == track)
 	{
-		if(i == 31)
+		if(i == 32)
 		{
 			Perform(2,shift);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
-		else if(i == 30 || i == 32)
+		else if(i == 31 || i == 33)
 		{
 			Perform(1,shift);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
-		else if(i == 29 || i == 33)
+		else if(i == 30 || i == 34)
 		{
 			Perform(0,shift);
 			PrintNote(track,i+1,0);
 			return 1;
 		}
 	}
-	else if(i == 34)
+	else if(i == 35)
 	{
 		Perform(0,shift);
 		PrintNote(track,i+1,0);
@@ -278,7 +280,7 @@ void JudgeSingle(int track)
 	{
 		int i,input;
 		PrintNote(track,3,1);
-		for(i = 3 ; i < 35 ; i++)
+		for(i = 3 ; i < 36 ; i++)
 		{
 			Sleep(*T);
 			PrintNote(track,i,0);
@@ -286,7 +288,7 @@ void JudgeSingle(int track)
 			if(JudgeNote(i,input,track,0)) break;
 		}
 		RefreshData();
-		PrintNote(track,35,0);
+		PrintNote(track,36,0);
 	}
 }
 
@@ -296,7 +298,7 @@ void JudgePair(int track1, int track2)
 	int i,input,flag1=0,flag2=0;
 	PrintNote(track1,3,1);
 	PrintNote(track2,3,1);
-	for(i = 3 ; i < 35 ; i++)
+	for(i = 3 ; i < 36 ; i++)
 	{
 		Sleep(*T);
 		if(!flag1)
@@ -313,8 +315,8 @@ void JudgePair(int track1, int track2)
 		}
 	}
 	RefreshData();
-	PrintNote(track1,35,0);
-	PrintNote(track2,35,0);
+	PrintNote(track1,36,0);
+	PrintNote(track2,36,0);
 }
 
 //演出成功界面
@@ -389,13 +391,93 @@ void PlayMap(char filename[], int level)
 			Life = 0;
 			RefreshData();
 			MoveCursor(18,15);
-			printf("You Died! Five!");
+			printf("You died! Pratice more!");
 			break;
 		}
 		p=p->next;
 	}
 	Clear();
 }
+
+//演示谱面
+void AutoplayMap(char filename[], int level)
+{
+    char st[32],sw[32];
+    int i;
+    strcpy(st,filename);
+    switch(level)
+    {
+    	case 3: strcat(st,"E.txt"); break;
+    	case 4: strcat(st,"N.txt"); break;
+	}
+    strcpy(sw,filename);
+    strcat(sw,".wav");
+	PlaySound(sw,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
+	NOTE *p=ReadMap(st);
+	while(p!=NULL)
+	{
+		switch(p->type)
+		{
+			case 0: 
+				Sleep(16*(*T));
+				Perform(-1,1);
+				Perform(-1,0);
+				Sleep(p->track-16*(*T));
+				break;
+			case 1:
+				if(p->track==0)
+				{
+					Sleep(16*(*T));
+					Perform(-1,1);
+					Perform(-1,0);
+					Sleep(16*(*T));
+				}
+				else
+				{
+					PrintNote(p->track,3,1);
+					for(i = 3 ; i < 33 ; i++)
+					{
+						Sleep(*T);
+						PrintNote(p->track,i,0);
+						PrintNote(p->track,i+1,1);
+						if(i == 18)
+						{
+							Perform(-1,1);
+							Perform(-1,0);
+						}
+					}
+					Perform(2,0);
+					PrintNote(p->track,33,0);
+					RefreshData();
+				}
+				break;
+			case 2: 
+				PrintNote(p->track/10,3,1);
+				PrintNote(p->track%10,3,1);
+				for(i = 3 ; i < 33 ; i++)
+				{
+					Sleep(*T);
+					PrintNote(p->track/10,i,0);
+					PrintNote(p->track/10,i+1,1);
+					PrintNote(p->track%10,i,0);
+					PrintNote(p->track%10,i+1,1);
+					if(i == 18)
+					{
+						Perform(-1,1);
+						Perform(-1,0);
+					}
+				}
+				Perform(2,0);
+				Perform(2,1);
+				RefreshData();
+				PrintNote(p->track/10,33,0);
+				PrintNote(p->track%10,33,0);
+				break;
+		}
+		p=p->next;
+	}
+	Clear();
+} 
 
 int main()
 {
