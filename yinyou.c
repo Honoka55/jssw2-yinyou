@@ -272,7 +272,7 @@ void JudgeSingle(int track)
 		Sleep(16*(*T));
 		Perform(-1,1);  //清空对上一个音符判定的显示
 		Perform(-1,0);
-		Sleep(16*(*T)); //TODO:可以考虑改成允许自由修改空音符时长以匹配歌曲BPM
+		Sleep(16*(*T));
 	}
 	else
 	{
@@ -376,6 +376,11 @@ void PlayMap(char filename[], int level)
 	{
 		switch(p->type)
 		{
+			case 0: 
+				Sleep(16*(*T));
+				Perform(-1,1);
+				Perform(-1,0);
+				Sleep(p->track-16*(*T)); break;
 			case 1: JudgeSingle(p->track); break;
 			case 2: JudgePair(p->track/10,p->track%10); break;
 		}
