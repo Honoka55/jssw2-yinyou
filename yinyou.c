@@ -274,7 +274,7 @@ void JudgeSingle(int track)
 		Sleep(16*(*T));
 		Perform(-1,1);  //清空对上一个音符判定的显示
 		Perform(-1,0);
-		Sleep(16*(*T));
+		Sleep(17*(*T));
 	}
 	else
 	{
@@ -430,7 +430,7 @@ void AutoplayMap(char filename[], int level)
 					Sleep(16*(*T));
 					Perform(-1,1);
 					Perform(-1,0);
-					Sleep(16*(*T));
+					Sleep(17*(*T));
 				}
 				else
 				{
