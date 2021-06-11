@@ -32,6 +32,22 @@ void CursorVisible(int i)
         SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
 
+//检测文件是否存在
+int Exist(char *filename)
+{
+	FILE *fp;
+	char st1[32],st2[32];
+	strcpy(st1,filename);
+	strcat(st1,"E.txt");
+	strcpy(st2,filename);
+    strcat(st2,"N.txt");
+    fp=fopen(st1,"r");
+    if(fp == NULL)	return 0;
+    fp=fopen(st2,"r");
+    if(fp == NULL)	return 0;
+    return 1;
+}
+
 //绘制选歌界面
 void DrawSonglist()
 {
@@ -69,8 +85,26 @@ void DrawSonglist()
 		CursorVisible(1);
 		scanf("%d",&choice);
 		if(choice==0) exit(0);
+		if(choice != 1 && choice != 2)
+		{
+			printf("\nInvalid input!\n");
+			system("pause");
+			continue;
+		}
+		if(Exist(song[choice-1]) == 0)
+		{
+			printf("\nFile missing!\n");
+			system("pause");
+			continue;
+		}
 		printf("\n\n 1. Easy\n 2. Normal\n\nPlease choose the level and Enter:");
 		scanf("%d",&level);
+		if(level != 1 && level != 2)
+		{
+			printf("\nInvalid level!\n");
+			system("pause");
+			continue;
+		}
 		DrawBG(song[choice-1]);
 		PlayMap(song[choice-1],level);
 		PlaySound(NULL,NULL,SND_FILENAME|SND_ASYNC|SND_LOOP);
@@ -333,7 +367,6 @@ void PlayMap(char filename[], int level)
     {
     	case 1: strcat(st,"E.txt"); break;
     	case 2: strcat(st,"N.txt"); break;
-    	default: strcat(st,".txt"); break;
 	}
     strcpy(sw,filename);
     strcat(sw,".wav");
